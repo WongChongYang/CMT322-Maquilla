@@ -239,18 +239,12 @@
               const data = serviceDoc.data()
               const serviceNode = serviceTemplate.content.cloneNode(true)
               const serviceButton = serviceNode.getElementById("service-button")
+              serviceButton.style.visibility = "hidden"
               const serviceUsername = serviceNode.getElementById("service-username")
               serviceNode.getElementById("client-completed").style.display="block"
               serviceNode.getElementById("client-rating").textContent += ' '+data['ClientRating'].toFixed(1)
               serviceNode.getElementById("client-feedback").textContent = data['ClientFeedback']
-              if(data['ArtistRating']==null){
-                serviceButton.textContent = "Rate client"
-                serviceButton.onclick = ()=>{
-                    window.location.href = "payment.html?serviceID="+serviceDoc.id
-                }
-              }
-              else{
-                serviceButton.style.visibility = "hidden"
+              if(data['ArtistRating']!=null){
                 serviceNode.getElementById("artist-completed").style.display="block"
                 serviceNode.getElementById("artist-rating").textContent += ' '+data['ArtistRating'].toFixed(1)
                 serviceNode.getElementById("artist-feedback").textContent = data['ArtistFeedback']
@@ -262,6 +256,13 @@
               else{
                 serviceUsername.textContent = data["ClientUsername"]
                 serviceUsername.onclick = (()=>window.location.href = "profile.html?user="+data["ClientUsername"])
+                if(data['ArtistRating']==null){
+                  serviceButton.style.visibility = "visible"
+                  serviceButton.textContent = "Rate client"
+                  serviceButton.onclick = ()=>{
+                      window.location.href = "payment.html?serviceID="+serviceDoc.id
+                  }
+                }
               }
               serviceNode.getElementById("service-location").textContent = data["ServiceLocation"]
               serviceNode.getElementById("service-payment").textContent = data["ServicePay"]
@@ -331,7 +332,7 @@
                 serviceButton.textContent = "Accept booking"
                 serviceButton.onclick = (()=>{
                   serviceButton.textContent = "Booking accepted"
-                  acceptService(uid, serviceID, serviceID, data["AppliedArtist"], false, artistUsername)
+                  acceptService(uid, serviceID, data["AppliedArtist"], false, null)
                 })
               }
               else{
