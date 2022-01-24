@@ -22,6 +22,10 @@ main {
   background-color: #FFE8E0;
   cursor: pointer;
 }
+#request-button{
+  position: absolute;
+  right: 200px;
+}
 h1{
   font-family: Cinzel;
   font-size: 48px;
