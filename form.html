@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Service</title>
+    <link rel="stylesheet" href="styles/fonts.css">
+    <link rel="stylesheet" href="styles/form.css">
+    <script type="module" src="navbar.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+<body>
+    <header>
+      <header>
+        <nav-bar></nav-bar>
+      </header>
+    <main>
+  <div class="container">
+    <div class="title">Request Service</div>
+    <form>
+      <div class="user-details">
+        <div class="input-box">
+          <label>Service</label>
+          <input id= "ServiceBox" type = "text" placeholder="Enter your service" required>
+        </div>
+        <div class="input-box">
+          <label>Location</label>
+          <input id= "LocationBox" type = "text" placeholder="Enter your location" required>
+        </div>
+        <div class="input-box">
+          <label>Service Pay </label>
+          <input id= "ServicePayBox" type = "text" placeholder="Enter your Service Pay" required>
+        </div>
+        <div class="input-box">
+          <label>Date</label>
+          <input id= "DateBox" type = "date" required>
+        </div>
+        <div class="input-box">
+          <label>Time</label>
+          <input id= "TimeBox" type = "time" required>
+        </div>
+      </div>
+      <button id="service-button"> POST </button>
+    </form>
+  </div>
+</main>
+<script type="module">    
+    import { doc, collection, addDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { auth, database } from "/firebase.js"
+    let ServiceBox = document.getElementById("ServiceBox");
+    let LocationBox = document.getElementById("LocationBox");
+    let DateBox = document.getElementById("DateBox");
+    let TimeBox= document.getElementById("TimeBox");
+    let ServicePayBox= document.getElementById("ServicePayBox");
+    let servicebutton = document.getElementById("service-button");
+    auth.onAuthStateChanged(currentUser=>{
+      const user = currentUser
+      const uid = user.uid
+      servicebutton.onclick = (e)=>{
+        e.preventDefault()
+        addDoc(collection(database, 'Services'), {
+          ClientID: uid,
+          ClientUsername : user.displayName,
+          ArtistID: null,
+          ArtistUsername : null,
+          ServiceTitle: ServiceBox.value,
+          ServiceLocation: LocationBox.value,
+          DateOfService: DateBox.value,
+          TimeOfService: TimeBox.value,
+          ServiceStatus: "open",
+          AppliedArtist : [],
+          ServicePay : parseFloat(ServicePayBox.value)
+        }).then((Service)=>{
+          updateDoc(doc(database, 'Booking', uid), {
+            OngoingBooking : arrayUnion(Service.id)
+          }).then(()=>{
+            alert("The service has been added!")
+            window.location.href = 'booking.html'
+          });
+        })
+      }
+    })
+  </script>
+</body>
+</html>

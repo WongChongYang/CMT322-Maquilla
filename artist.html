@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/fonts.css">
+    <link rel="stylesheet" href="styles/profile.css">
+    <link rel="stylesheet" href="styles/searchBar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Makeup Artist</title>
+    <script type="module" src="navbar.js"></script>
+    <style>
+        #profile-pic-frame:hover{
+            box-shadow: 0 0 15px #55555555;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav-bar></nav-bar>
+    </header>
+    <h1>Discover Makeup Artist</h1>
+    <section class="search-bar-section">
+        <div class="search-bar-container">
+            <div class="search-field">
+                <i class="fa fa-user-o"></i>
+                <input class="text-input" id="artist-box" type="text" placeholder="Search for makeup artists">
+            </div>
+            <div class="search-field">
+                <i class="fa fa-map-marker"></i>
+                <input class="text-input" id="location-box" type="text" placeholder="Location">
+            </div>
+            <button id="search-button">
+                <i class="fa fa-search" aria-hidden="true"></i>
+            </button>
+        </div>
+    </section>
+    <main>
+        <div id="grid">
+            <template id="profile">
+                <div class="profile-card">
+                    <div id="profile-pic-frame">
+                        <img id="profile-pic">
+                        <img id="profile-pic-button">
+                    </div>
+                    <div id="username"></div>
+                    <div class="field location">
+                        <i class="fa fa-map-marker"></i>
+                        <p id="location"></p>
+                    </div>
+                    <div class="footer">
+                        <div class="field rating">
+                            Rating:
+                        <div id="rating"></div>
+                        </div>
+                        <div id="price-range">
+                            $
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </main>
+    <script type="module">
+        import { auth, database, storage } from "/firebase.js"
+        import { updateProfile } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"
+        import { doc, collection, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"
+        import { ref, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"
+
+        const button = document.getElementById("search-button")
+
+        const grid = document.getElementById("grid")
+        const template = document.getElementById("profile")
+        
+        const profileRef = collection(database, 'Users')
+        auth.onAuthStateChanged(currentUser=>{
+            searchArtist(currentUser.uid)
+            button.onclick = (()=>{
+                grid.innerHTML = ''
+                searchArtist(currentUser.uid)
+            })
+        })
+        function searchArtist(currentuid){
+            const artist = document.getElementById("artist-box").value.toLowerCase()
+            const location = document.getElementById("location-box").value.toLowerCase()
+            getDocs(profileRef).then((snapshot) => {
+                snapshot.docs.forEach((profile)=>{
+                    const uid = profile.id
+                    const data = profile.data()
+                    if(data["IsArtist"]==true &&
+                    uid != currentuid &&
+                    data["Username"].toLowerCase().includes(artist) &&
+                    data["Location"].toLowerCase().includes(location)){
+                        const profileCard = template.content.cloneNode(true)
+                        const profilePic = profileCard.getElementById("profile-pic")
+                        const priceRange = profileCard.getElementById("price-range")
+                        listAll(ref(storage, "users/"+uid)).then((folder)=>{
+                            var profilePicRef = ref(storage, "users/"+uid+"/avatar.jpg")
+                            if(folder.items.length == 0)
+                            profilePicRef = ref(storage, "images/Maquilla.png")
+                            getDownloadURL(profilePicRef).then(url=>{
+                            profilePic.src = url
+                            }, error=>console.log(error.message))
+                        })
+                        profilePic.onclick = (()=>{
+                            window.location.href = "profile.html?user="+data["Username"]
+                        })
+                        profileCard.getElementById("username").textContent = '@ '+data["Username"]
+                        profileCard.getElementById("location").textContent = data["Location"]
+                        profileCard.getElementById("rating").textContent = data["Rating"].toFixed(1)
+                        priceRange.style.display = "flex"
+                        const averagePrice = (data["PriceFrom"] + data["PriceTo"])/2
+                        if(averagePrice==0)
+                        priceRange.textContent = "Flexible Price"
+                        else
+                        priceRange.textContent += averagePrice
+                        grid.append(profileCard)
+                    }
+                })
+            })
+        }
+    </script>
+</body>
+</html>

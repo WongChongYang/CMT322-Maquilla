@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discover</title>
+    <link rel="stylesheet" href="styles/booking.css">
+    <link rel="stylesheet" href="styles/fonts.css">
+    <link rel="stylesheet" href="styles/searchBar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body>
+    <header>
+      <nav-bar></nav-bar>
+    </header>
+    <h1>Explore Makeup Jobs</h1>
+    <section class="search-bar-section">
+      <button id="request-button"><a href="form.html">Request Service</a></button>
+      <div class="search-bar-container">
+        <div class="search-field">
+            <i class="fa fa-calendar-o"></i>
+            <input class="text-input" id="service-box" type="text" placeholder="Search for makeup jobs">
+        </div>
+        <div class="search-field">
+            <i class="fa fa-map-marker"></i>
+            <input class="text-input" id="location-box" type="text" placeholder="Location">
+        </div>
+        <div class="search-field">
+          <i class="fa fa-usd"></i>
+          <input class="text-input" id="price-box" type="text" placeholder="Price">
+      </div>
+        <button id="search-button">
+            <i class="fa fa-search" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
+    <main>
+      <div id="container">
+        <div id="booking-table">
+          <template id="template">
+            <div id="service-item">
+              <div id="date-and-time">
+                  <h2 id="service-date"></h2>
+                  <h2 id="service-time"></h2>
+              </div>
+              <div class="detail-container">
+                <h2 id="service-title"></h2>
+                <div class="service-field username">
+                    <i class="fa fa-user-o"></i>
+                    <h2 id="service-username"></h2>
+                </div>
+              </div>
+              <div class="detail-container">
+                <div class="service-field">
+                  <i class="fa fa-map-marker"></i>
+                  <h2 id="service-location"></h2>
+                </div>
+                <div class="field-container">
+                  <div class="service-field">
+                    <i class="fa fa-usd"></i>
+                    <h2 id="service-payment"></h2>
+                  </div>
+                  <button id="service-button">Apply</button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </main>
+  <script type="module">
+  import { doc, collection, getDoc, getDocs, setDoc, arrayUnion, updateDoc, arrayRemove  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"
+  import { ref, getDownloadURL, listAll, uploadBytesResumable, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"
+  import { auth, database, storage } from "/firebase.js"
+
+  const serviceTable = document.getElementById("booking-table")
+  const template = document.getElementById("template")
+  const searchButton = document.getElementById("search-button")
+
+  auth.onAuthStateChanged(currentUser=>{  
+    var uid = currentUser.uid
+    searchService(uid)
+    searchButton.onclick = ()=>{
+      serviceTable.innerHTML = ''
+      searchService(uid)
+    }
+  })
+  function searchService(uid){
+    const serviceTitle = document.getElementById("service-box").value.toLowerCase()
+    const location = document.getElementById("location-box").value.toLowerCase()
+    const price = document.getElementById("price-box").value
+    getDocs(collection(database, 'Services')).then(snapshot => {
+      snapshot.docs.forEach((service)=>{
+      const data = service.data()
+      if(data["ServiceStatus"] == "open" &&
+      data['ClientID']!=uid &&
+      data["ServiceTitle"].toLowerCase().includes(serviceTitle) &&
+      data["ServiceLocation"].toLowerCase().includes(location) &&
+      data["ServicePay"]>=price){
+        const serviceNode = template.content.cloneNode(true)
+        const username = serviceNode.getElementById("service-username")
+        const location = serviceNode.getElementById("service-location")
+        const servicerequest = serviceNode.getElementById("service-title")
+        const date = serviceNode.getElementById("service-date")
+        const time = serviceNode.getElementById("service-time")
+        const pay = serviceNode.getElementById("service-payment")
+        const ApplyBtn = serviceNode.getElementById("service-button")
+        if(data['AppliedArtist'].includes(uid)){
+          ApplyBtn.textContent = "Applied"
+          ApplyBtn.disabled = true
+        }
+        const serviceid = service.id
+        ApplyBtn.onclick = (()=>{
+        setDoc(doc(database, 'Services',serviceid), {
+            AppliedArtist : arrayUnion(uid)
+          },{ merge: true })
+          setDoc(doc(database, 'Booking',uid), {
+            BookingRequest : arrayUnion(serviceid)
+          },{ merge: true }).then(()=>{
+            alert("The service is applied succesfully!")
+            ApplyBtn.textContent = "Applied"
+            ApplyBtn.disabled = true
+          });
+        })
+        username.textContent = data ["ClientUsername"]
+        location.textContent = data["ServiceLocation"]
+        servicerequest.textContent = data["ServiceTitle"]
+        date.textContent = data["DateOfService"]
+        time.textContent=data["TimeOfService"]
+        pay.textContent = data ["ServicePay"]
+        serviceTable.append(serviceNode)
+        }
+      })
+    })
+  }
+  </script>
+  <script type="module" src="navbar.js"></script>
+  </body>
+</html>

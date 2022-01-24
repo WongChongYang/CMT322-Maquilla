@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Profile</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="styles/fonts.css">
+        <link rel="stylesheet" href="styles/profile.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+    <body>
+        <header>
+            <nav-bar></nav-bar>
+        </header>
+        <section class="profile-section">
+            <div class="profile-body">
+                <div class="profile-card">
+                    <div id="profile-pic-frame">
+                        <img id="profile-pic">
+                        <img id="profile-pic-button">
+                    </div>
+                    <div id="username"></div>
+                    <div class="field location">
+                        <i class="fa fa-map-marker"></i>
+                        <p id="location"></p>
+                    </div>
+                    <div class="footer">
+                        <div class="field rating">
+                            Rating:
+                        <div id="rating"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-description">
+                        <div id="name"></div>
+                        <div class="field contact">
+                            <i class="fa fa-mobile" aria-hidden="true"></i>
+                            <div id="contact"></div>
+                        </div>
+                        <hr>
+                        <div id="bio"></div>
+                        <div class="field">
+                            <div id="price-range"></div>
+                            <button id="book-button">Book</button>
+                        </div>
+                    </div>
+                    <div class="field social-media">
+                        <a href=""><i class="fa fa-whatsapp" aria-hidden="true"></i></a>
+                        <a href=""><i class="fa fa-facebook-square" aria-hidden="true"></i></a>
+                        <a href=""><i class="fa fa-instagram" aria-hidden="true"></i></a>
+                        <a href=""><i class="fa fa-twitter-square" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div id="booking-section">
+                <div class="booking-form">
+                    <div class="form-title">
+                        <h1>Booking</h1>
+                        <i id="close-button" class="fa fa-times"></i>
+                    </div>
+                    <div id="service-list">
+                        <template id="template">
+                            <div id="service-item">
+                                <div id="date-and-time">
+                                    <h2 id="service-date"></h2>
+                                    <h2 id="service-time"></h2>
+                                </div>
+                                <div class="detail-container">
+                                    <h2 id="service-title"></h2>
+                                </div>
+                                <div class="detail-container">
+                                    <div class="service-field detail">
+                                        <i class="fa fa-map-marker"></i>
+                                        <h2 id="service-location"></h2>
+                                    </div>
+                                    <div class="service-field detail">
+                                        <i class="fa fa-usd"></i>
+                                        <h2 id="service-payment"></h2>
+                                        <button id="service-button"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="grid-section">
+            <div id="grid">
+            </div>
+        </section>
+        <script type="module">
+        import { getAuth, updateProfile } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"
+        import { getFirestore, doc, collection, getDoc, getDocs, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"
+        import { getStorage, ref, getDownloadURL, listAll, uploadBytesResumable, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"
+        import { auth, database, storage } from "/firebase.js"
+
+        const profilePic = document.getElementById("profile-pic")
+        const username = document.getElementById("username")
+        const name = document.getElementById("name")
+        const bio = document.getElementById("bio")
+        const location = document.getElementById("location")
+        const contact = document.getElementById("contact")
+        const artist = document.getElementById("artist-input")
+        const rating = document.getElementById("rating")
+        const bookButton = document.getElementById("book-button")
+        const postGrid = document.getElementById("grid")
+        const profileUsername = (new URLSearchParams(window.location.search)).get("user")
+
+        auth.onAuthStateChanged(currentUser=>{    
+            getDocs(collection(database, 'Users')).then((snapshot) => {
+                var uid
+                if(currentUser!=null)
+                uid = currentUser.uid
+                var isOwnedProfile = true
+
+                if(profileUsername!=null && snapshot.docs.every((profile)=>{
+                    if(profile.data()["Username"]==profileUsername){
+                        if(uid!=profile.id){
+                            uid = profile.id
+                            isOwnedProfile = false
+                        }
+                        return false
+                    }
+                    else return true
+                }))
+                return
+
+                //Check if the user has a profile picture
+                const profilePicRef = ref(storage, "users/"+uid+"/avatar.jpg")
+                listAll(ref(storage, "users/"+uid)).then(res=>{
+                    let storageRef = profilePicRef
+                    if(res.items.length == 0)
+                    storageRef = ref(storage, "images/Maquilla.png")
+                    getDownloadURL(storageRef).then(url=>{
+                    profilePic.src = url
+                    }, error=>console.log(error.message))
+                })
+                
+                //If is owned profile, add upload button
+                if(isOwnedProfile){
+                    getDownloadURL(ref(storage, "images/upload.png")).then((url)=>{
+                    const profilePicButton = document.getElementById("profile-pic-button")
+                    profilePicButton.style.display = "block" 
+                    profilePicButton.src = url
+                    profilePicButton.onclick = (()=>{uploadImage(profilePicRef)})
+                    let postImg = document.createElement("img")
+                    postImg.src = url
+                    let post = document.createElement("div")
+                    post.className = "post-item"
+                    post.appendChild(postImg)
+                    grid.appendChild(post)
+                    post.onclick = (()=>{
+                        const postID = Date.now().toString()
+                        const postRef = ref(storage, "users/"+uid+"/uploads/"+postID+".jpg")
+                        uploadImage(postRef, postID)
+                        })
+                    });
+                    function uploadImage(uploadRef, postID){
+                        let input = document.createElement("input")
+                        input.type = "file"
+                        input.accept = ".jpg, .jpeg, .png, .jfif"
+                        input.onchange = async(e) =>{
+                            const imgFile = e.target.files[0]
+                            await uploadBytesResumable(uploadRef, imgFile)
+                            if(uploadRef==profilePicRef){
+                                const url = await getDownloadURL(profilePicRef)
+                                await updateProfile(currentUser, {photoURL: url})
+                            }
+                            window.location.reload()
+                        }
+                        input.click();
+                    }
+                }
+                else{
+                    const booking = document.getElementById("booking-section")
+                    bookButton.onclick = (()=>{
+                        booking.style.visibility = "visible";
+                        booking.style.opacity = "1";
+                        booking.style.transition = "visibility 0s, opacity 0.5s";
+                    })
+
+                    document.getElementById("close-button").onclick = (()=>{
+                        booking.style.visibility = "hidden"
+                        booking.style.opacity = 0;
+                        booking.style.transition = ".2s";
+                    })
+
+                    getDoc(doc(database, "Booking", currentUser.uid)).then(snapshot=>{
+                        const serviceList = document.getElementById("service-list")
+                        const template = document.getElementById("template")
+                        const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+                        snapshot.data()["OngoingBooking"].forEach(async(serviceID)=>{
+                            const serviceDoc = doc(database, "Services", serviceID)
+                            const serviceDetails = (await getDoc(serviceDoc)).data()
+                            if(serviceDetails["ServiceStatus"]=="open" && serviceDetails["ClientID"]==currentUser.uid &&(serviceDetails["ArtistID"]==null || serviceDetails["ArtistID"]==uid)){
+                                const ongoingService = template.content.cloneNode(true)
+                                const serviceDate = serviceDetails["DateOfService"].split("-")
+                                ongoingService.getElementById("service-date").textContent = month[parseInt(serviceDate[1])-1] + " " + serviceDate[2] + " , " + serviceDate[0]
+                                ongoingService.getElementById("service-time").textContent = serviceDetails["TimeOfService"]
+                                ongoingService.getElementById("service-title").textContent = serviceDetails["ServiceTitle"]
+                                ongoingService.getElementById("service-location").textContent = serviceDetails["ServiceLocation"]
+                                ongoingService.getElementById("service-payment").textContent = serviceDetails["ServicePay"]
+                                const serviceButton = ongoingService.getElementById("service-button")
+                                const artistDoc = doc(database, "Booking", uid)
+                                const artistBooking = (await getDoc(artistDoc)).data()
+                                if(serviceDetails["ArtistUsername"]==profileUsername){
+                                    serviceButton.textContent = "Requested"
+                                    serviceButton.onclick = ()=>{cancelBooking(artistDoc, uid, serviceDoc, serviceID, serviceButton)}
+                                }
+                                else if(artistBooking["BookingRequest"].includes(serviceID)){
+                                    serviceButton.textContent = "Accept"
+                                    serviceButton.onclick = ()=>{
+                                        serviceDetails["AppliedArtist"].forEach(async(artistID)=>{
+                                            await updateDoc(doc(database, "Booking", artistID), {
+                                                BookingRequest: arrayRemove(serviceID)
+                                            })
+                                        })
+                                        acceptBooking(artistDoc, uid, serviceDoc, serviceID, serviceButton)
+                                    }
+                                }
+                                else{
+                                    serviceButton.textContent = "Book"
+                                    serviceButton.onclick = ()=>{requestBooking(artistDoc, uid, serviceDoc, serviceID, serviceButton)}
+                                }
+                                serviceList.append(ongoingService)
+                                }
+                        })
+                        async function acceptBooking(artistDoc, artistID, serviceDoc, serviceID, serviceButton){
+                            await updateDoc(artistDoc, {
+                                OngoingBooking: arrayUnion(serviceID)
+                            })
+                            await updateDoc(serviceDoc, {
+                                ArtistID: artistID,
+                                ArtistUsername: profileUsername,
+                                ServiceStatus: "ongoing"
+                            })
+                            serviceButton.textContent = "Accepted"
+                            serviceButton.disabled = true
+                        }
+                        async function cancelBooking(artistDoc, artistID, serviceDoc, serviceID, serviceButton){
+                            await updateDoc(artistDoc, {
+                                BookingRequest: arrayRemove(serviceID)
+                            })
+                            await updateDoc(serviceDoc, {
+                                ArtistID: null,
+                                ArtistUsername: null,
+                                ServiceStatus: "open"
+                            })
+                            serviceButton.textContent = "Cancelled"
+                            serviceButton.disabled = true
+                        }
+                        async function requestBooking(artistDoc, artistID, serviceDoc, serviceID, serviceButton){
+                            await updateDoc(artistDoc, {
+                                BookingRequest: arrayUnion(serviceID)
+                            })
+                            await updateDoc(serviceDoc, {
+                                ArtistID: artistID,
+                                ArtistUsername: profileUsername
+                            })
+                            serviceButton.textContent = "Requested"
+                            serviceButton.disabled = true
+                        }
+                    })
+                }
+                
+                const userDoc = doc(database, "Users", uid)
+                getDoc(userDoc).then(snapshot => {
+                    const data = snapshot.data()
+                    username.textContent = '@ '+data["Username"]
+                    location.textContent = data["Location"]
+                    rating.textContent = data["Rating"].toFixed(1)
+                    name.textContent = data["Name"]
+                    contact.textContent = data["Contact"]
+                    bio.innerHTML = data["Bio"]
+                    const isArtist = data["IsArtist"]
+                    if(isArtist){
+                        bookButton.style.display = "block"
+                        const priceRange = document.getElementById("price-range")
+                        priceRange.style.display = "flex"
+                        if(data["PriceTo"]==0)
+                        priceRange.textContent = "Flexible Price Range"
+                        else
+                        priceRange.textContent = "$ "+data["PriceFrom"]+" - $ "+data["PriceTo"]
+                    }
+                    listAll(ref(storage, "users/"+uid+"/uploads")).then((folder)=>{
+                        folder.items.forEach(async(postRef) => {
+                            let postImg = document.createElement("img")
+                            postImg.className = "post-pic"
+                            postImg.src = await getDownloadURL(postRef)
+                            let post = document.createElement("div")
+                            post.className = "post-item"
+                            post.appendChild(postImg)
+                            grid.appendChild(post)
+                            if(isOwnedProfile){
+                                post.onclick = (()=>{
+                                    deleteObject(ref(storage, postRef.fullPath))
+                                    .then(window.location.reload()) 
+                                })
+                            }
+                        })
+                    }).catch(error=>console.log(error.message))
+                })
+            })
+        })
+        </script>
+        <script type="module" src="navbar.js"></script>
+    </body>
+</html>

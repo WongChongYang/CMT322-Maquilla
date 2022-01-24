@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking</title>
+    <link rel="stylesheet" href="styles/booking.css">
+    <link rel="stylesheet" href="styles/fonts.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body>
+    <header>
+      <nav-bar></nav-bar>
+    </header>
+    <main>
+    <div id="container">
+      <h1>My Schedule</h1>
+      <div id="header">
+        <div id="monthDisplay"></div>
+        <div>
+          <button id="backButton">Back</button>
+          <button id="nextButton">Next</button>
+        </div>
+      </div>
+
+      <div id="weekdays">
+        <div>Sunday</div>
+        <div>Monday</div>
+        <div>Tuesday</div>
+        <div>Wednesday</div>
+        <div>Thursday</div>
+        <div>Friday</div>
+        <div>Saturday</div>
+      </div>
+
+      <div id="calendar"></div>
+      <h1>My Booking</h1>
+      <nav class="booking-navbar">
+        <span id="upcoming-tab">Upcoming</span>
+        <span id="completed-tab">Completed<h4 class="notification"></h4></span>
+        <span id="request-tab">Request<h4 class="notification"></h4></span>
+      </nav>
+      <div id="booking-table">
+        <template id="service-template">
+          <div id="service-item">
+            <div id="date-and-time">
+                <h2 id="service-date"></h2>
+                <h2 id="service-time"></h2>
+            </div>
+            <div class="detail-container">
+              <h2 id="service-title"></h2>
+              <div class="service-field username">
+                  <i class="fa fa-user-o"></i>
+                  <h2 id="service-username"></h2>
+              </div>
+              <div id="client-completed">
+                <div class="rating-title">
+                  <h2 id="client-rating">Client's Rating:</h2>
+                  <i class="fa fa-star"></i>
+                </div>
+                <h4 class="feedback" id="client-feedback">Customer's Feedback</h4>
+              </div>
+            </div>
+            <div class="detail-container">
+              <div class="service-field">
+                <i class="fa fa-map-marker"></i>
+                <h2 id="service-location"></h2>
+              </div>
+              <div class="field-container">
+                <div class="service-field">
+                  <i class="fa fa-usd"></i>
+                  <h2 id="service-payment"></h2>
+                </div>
+                <button id="service-button"></button>
+              </div>
+              <div id="artist-completed">
+                <div class="rating-title">
+                  <h2 id="artist-rating">Artist's Rating:</h2>
+                  <i class="fa fa-star"></i>
+                </div>
+                <h4 class="feedback" id="artist-feedback">Artist</h4>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </main>
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="navbar.js"></script>
+  <script type="module">
+  import { doc, collection, getDoc, getDocs, setDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"; 
+  import{ auth, database } from "./firebase.js"
+
+  let nav = 0;
+  let clicked = null;
+  var requestNum = 0;
+  var completedNum = 0;
+  const bookingTable = document.getElementById("booking-table")
+  const notification = document.getElementsByClassName("notification")
+  const upcomingTab =document.getElementById("upcoming-tab")
+  const completedTab =document.getElementById("completed-tab")
+  const requestTab =document.getElementById("request-tab")
+  const serviceTemplate = document.getElementById("service-template")
+  const calendar = document.getElementById('calendar');
+  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  auth.onAuthStateChanged(currentUser=>{
+    const user = currentUser
+    const uid = user.uid
+    getDoc(doc(database, 'Booking', uid)).then(async(bookingDoc)=>{
+      var serviceDate = await new Promise(resolve=>{
+        var serviceDate = {}
+        const ongoingBooking = bookingDoc.data()['OngoingBooking']
+        const serviceNum = ongoingBooking.length-1
+        if(serviceNum==-1){
+          resolve(null)
+          return
+        }
+        ongoingBooking.forEach((serviceID, index)=>{
+          getDoc(doc(database, 'Services', serviceID)).then(serviceDoc=>{
+            const date = serviceDoc.data()['DateOfService']
+            const title = serviceDoc.data()['ServiceTitle']
+            if(serviceDate[date])
+            serviceDate[date] += '\n'+title
+            else
+            serviceDate[date] = title
+            if(index == serviceNum)
+            resolve(serviceDate)
+          })
+        })
+      })
+      loadCalendar(serviceDate)
+      document.getElementById('nextButton').onclick = (() => {
+        nav++;
+        loadCalendar(serviceDate)
+        });
+      document.getElementById('backButton').onclick = (() => {
+        nav--;
+        loadCalendar(serviceDate)
+        });
+    })
+    function loadUpcoming(){
+      upcomingTab.classList.add('isClicked')
+      completedTab.classList.remove('isClicked')
+      requestTab.classList.remove('isClicked')
+      bookingTable.innerHTML = ''
+      getDoc(doc(database, 'Booking', uid)).then(bookingDoc=>{
+        if(bookingDoc.data()['OngoingBooking'].length==0){
+          const message = document.createElement('h3')
+          message.textContent = "No services"
+          bookingTable.append(message)
+        }
+        else{
+          bookingDoc.data()['OngoingBooking'].forEach(serviceID=>{
+            getDoc(doc(database, 'Services', serviceID)).then(serviceDoc=>{
+              const data = serviceDoc.data()
+              const serviceNode = serviceTemplate.content.cloneNode(true)
+              const serviceButton = serviceNode.getElementById("service-button")
+              const serviceUsername = serviceNode.getElementById("service-username")
+              if(data["ServiceStatus"] == "open"){
+                if(data["ArtistID"]==null){
+                  serviceUsername.textContent = "No makeup artist"
+                  serviceUsername.onclick = ()=>window.location.href = "artist.html"
+                  serviceButton.textContent = "Delete service"
+                  serviceButton.onclick = ()=>{
+                    updateDoc(doc(database, 'Booking', uid), {
+                      OngoingBooking: arrayRemove(serviceID)
+                    }).then(async()=>{
+                      await new Promise((resolve)=>{
+                        const arrayLimit = data['AppliedArtist'].length - 1
+                        if(arrayLimit==-1){
+                          resolve()
+                          return
+                        }
+                        data['AppliedArtist'].forEach((artistID,index)=>{
+                          updateDoc(doc(database, 'Booking', artistID), {
+                            BookingRequest: arrayRemove(serviceID)
+                          })
+                          if(index==arrayLimit)
+                          resolve()
+                        })
+                      })
+                      deleteDoc(doc(database, 'Services', serviceID)).then(()=> window.location.reload())
+                    })
+                  }
+                }
+                else{
+                  serviceUsername.textContent = data["ArtistUsername"]
+                  serviceUsername.onclick = ()=>window.location.href = "profile.html?user="+data["ArtistUsername"]
+                  serviceButton.textContent = "Waiting artist to accept"
+                  serviceButton.disabled = true
+                }
+              }
+              else{
+                if(data["ClientID"]==uid){
+                  serviceUsername.textContent = data["ArtistUsername"]
+                  serviceUsername.onclick = ()=>window.location.href = "profile.html?user="+data["ArtistUsername"]
+                  serviceButton.textContent = "Pay"
+                  serviceButton.onclick = ()=>{
+                      window.location.href = "payment.html?serviceID="+serviceDoc.id
+                  }
+                }
+                else{
+                  serviceButton.textContent = "Ongoing"
+                  serviceButton.disabled = true
+                  serviceUsername.textContent = data["ClientUsername"]
+                  serviceUsername.onclick = ()=>window.location.href = "profile.html?user="+data["ClientUsername"]
+                }
+              }
+              serviceNode.getElementById("service-location").textContent = data["ServiceLocation"]
+              serviceNode.getElementById("service-payment").textContent = data["ServicePay"]
+              serviceNode.getElementById("service-title").textContent = data["ServiceTitle"]
+              serviceNode.getElementById("service-date").textContent = data["DateOfService"]
+              serviceNode.getElementById("service-time").textContent=data["TimeOfService"]
+              bookingTable.append(serviceNode)
+            })
+          })
+        }
+      })
+    }
+    function loadCompleted(){
+      upcomingTab.classList.remove('isClicked')
+      completedTab.classList.add('isClicked')
+      requestTab.classList.remove('isClicked')
+      bookingTable.innerHTML = ''
+      getDoc(doc(database, 'Booking', uid)).then(bookingDoc=>{
+        if(bookingDoc.data()['CompletedBooking'].length==0){
+          const message = document.createElement('h3')
+          message.textContent = "No services"
+          bookingTable.append(message)
+        }
+        else{
+          bookingDoc.data()['OngoingBooking'].forEach(serviceID=>{
+            
+          })
+          bookingDoc.data()['CompletedBooking'].forEach(serviceID=>{
+            getDoc(doc(database, 'Payment', serviceID)).then(serviceDoc=>{
+              const data = serviceDoc.data()
+              const serviceNode = serviceTemplate.content.cloneNode(true)
+              const serviceButton = serviceNode.getElementById("service-button")
+              const serviceUsername = serviceNode.getElementById("service-username")
+              serviceNode.getElementById("client-completed").style.display="block"
+              serviceNode.getElementById("client-rating").textContent += ' '+data['ClientRating'].toFixed(1)
+              serviceNode.getElementById("client-feedback").textContent = data['ClientFeedback']
+              if(data['ArtistRating']==null){
+                serviceButton.textContent = "Rate client"
+                serviceButton.onclick = ()=>{
+                    window.location.href = "payment.html?serviceID="+serviceDoc.id
+                }
+              }
+              else{
+                serviceButton.style.visibility = "hidden"
+                serviceNode.getElementById("artist-completed").style.display="block"
+                serviceNode.getElementById("artist-rating").textContent += ' '+data['ArtistRating'].toFixed(1)
+                serviceNode.getElementById("artist-feedback").textContent = data['ArtistFeedback']
+              }
+              if(data["ClientID"]==uid){
+                serviceUsername.textContent = data ["ArtistUsername"]
+                serviceUsername.onclick = (()=>window.location.href = "profile.html?user="+data["ArtistUsername"])
+              }
+              else{
+                serviceUsername.textContent = data["ClientUsername"]
+                serviceUsername.onclick = (()=>window.location.href = "profile.html?user="+data["ClientUsername"])
+              }
+              serviceNode.getElementById("service-location").textContent = data["ServiceLocation"]
+              serviceNode.getElementById("service-payment").textContent = data["ServicePay"]
+              serviceNode.getElementById("service-title").textContent = data["ServiceTitle"]
+              serviceNode.getElementById("service-date").textContent = data["DateOfService"]
+              serviceNode.getElementById("service-time").textContent=data["TimeOfService"]
+              bookingTable.append(serviceNode)
+            })
+          })
+        }
+      })
+    }
+    function loadRequest(){
+      upcomingTab.classList.remove('isClicked')
+      completedTab.classList.remove('isClicked')
+      requestTab.classList.add('isClicked')
+      bookingTable.innerHTML = ''
+      getDoc(doc(database, 'Booking', uid)).then(bookingDoc=>{
+        if(requestNum==0){
+          const message = document.createElement('h3')
+          message.textContent = "No services"
+          bookingTable.append(message)
+        }
+        else{
+          bookingDoc.data()['OngoingBooking'].forEach(serviceID=>{
+            getDoc(doc(database, 'Services', serviceID)).then(serviceDoc=>{
+              const data = serviceDoc.data()
+              if (data['ClientID']==uid && data['ServiceStatus'] == "open" && data['AppliedArtist'].length!=0){
+                data['AppliedArtist'].forEach(artistID=>{
+                  const serviceNode = serviceTemplate.content.cloneNode(true)
+                  const serviceButton = serviceNode.getElementById("service-button")
+                  const serviceUsername = serviceNode.getElementById("service-username")
+                  serviceNode.getElementById("service-location").textContent = data["ServiceLocation"]
+                  serviceNode.getElementById("service-payment").textContent = data["ServicePay"]
+                  serviceNode.getElementById("service-title").textContent = data["ServiceTitle"]
+                  serviceNode.getElementById("service-date").textContent = data["DateOfService"]
+                  serviceNode.getElementById("service-time").textContent=data["TimeOfService"]
+                  getDoc(doc(database, 'Users', artistID)).then(artistDoc=>{
+                    const artistUsername = artistDoc.data()["Username"]
+                    serviceUsername.textContent = artistUsername
+                    serviceUsername.onclick = (()=>window.location.href = "profile.html?user="+artistUsername)
+                    serviceButton.textContent = "Accept request"
+                    serviceButton.onclick = ()=>{
+                      serviceButton.textContent = "Request accepted"
+                      acceptService(artistID, serviceID, data["AppliedArtist"], true, artistUsername)
+                    }
+                    bookingTable.append(serviceNode)
+                  })
+                })
+              }
+            })
+          })
+          bookingDoc.data()['BookingRequest'].forEach(serviceID=>{
+            getDoc(doc(database, 'Services', serviceID)).then(serviceDoc=>{
+              const data = serviceDoc.data()
+              const serviceNode = serviceTemplate.content.cloneNode(true)
+              const serviceButton = serviceNode.getElementById("service-button")
+              const serviceUsername = serviceNode.getElementById("service-username")
+              serviceUsername.textContent = data["ClientUsername"]
+              serviceUsername.onclick = (()=>window.location.href = "profile.html?user="+data["ClientUsername"])
+              serviceNode.getElementById("service-location").textContent = data["ServiceLocation"]
+              serviceNode.getElementById("service-payment").textContent = data["ServicePay"]
+              serviceNode.getElementById("service-title").textContent = data["ServiceTitle"]
+              serviceNode.getElementById("service-date").textContent = data["DateOfService"]
+              serviceNode.getElementById("service-time").textContent=data["TimeOfService"]
+              if(data["ArtistID"]==uid){
+                serviceButton.textContent = "Accept booking"
+                serviceButton.onclick = (()=>{
+                  serviceButton.textContent = "Booking accepted"
+                  acceptService(uid, serviceID, serviceID, data["AppliedArtist"], false, artistUsername)
+                })
+              }
+              else{
+                serviceButton.textContent = "Waiting client to accept"
+                serviceButton.onclick = async()=>{
+                  serviceButton.textContent = "Cancelled"
+                  await updateDoc(doc(database, 'Booking', uid), {
+                    BookingRequest: arrayRemove(serviceID)
+                  })
+                  await updateDoc(doc(database, 'Services', serviceID), {
+                    AppliedArtist: arrayRemove(uid)
+                  })
+                  window.location.reload()
+                }
+              }
+              bookingTable.append(serviceNode)
+            })
+          })
+        }
+      })
+    }
+    getDoc(doc(database, 'Booking', uid)).then(async(bookingDoc)=>{
+      const bookingData = bookingDoc.data()
+      completedNum = await new Promise((resolve)=>{
+        const serviceNum = bookingData['CompletedBooking'].length-1
+        if(serviceNum==-1){
+          resolve(0)
+          return
+        }
+        bookingData['CompletedBooking'].forEach((serviceID, index)=>{
+          getDoc(doc(database, 'Services', serviceID)).then(serviceDoc=>{
+            if(!serviceDoc.exists())
+            return
+            const data = serviceDoc.data()
+            if(data['ServiceStatus']=='completed' && data['ArtistID']==uid){
+              completedNum ++
+            }
+            if(index == serviceNum)
+            resolve(completedNum)
+          })
+        })
+      })
+      if(completedNum>0)
+      notification[0].textContent = '('+completedNum+')'
+    })
+    getDoc(doc(database, 'Booking', uid)).then(async(bookingDoc)=>{
+      const bookingData = bookingDoc.data()
+      requestNum = await new Promise((resolve)=>{
+        const serviceNum = bookingData['OngoingBooking'].length-1
+        if(serviceNum==-1){
+          resolve(0)
+          return
+        }
+        bookingData['OngoingBooking'].forEach((serviceID, index)=>{
+          getDoc(doc(database, 'Services', serviceID)).then(serviceDoc=>{
+            const data = serviceDoc.data()
+            if(data['ServiceStatus']=='open' && data['ClientID']==uid && data['AppliedArtist'].length!=0){
+              requestNum += data['AppliedArtist'].length
+            }
+            if(index == serviceNum)
+            resolve(requestNum)
+          })
+        })
+      })
+      requestNum += bookingData['BookingRequest'].length
+      if(requestNum>0)
+      notification[1].textContent = '('+requestNum+')'
+    })
+    loadUpcoming()
+    upcomingTab.onclick = (loadUpcoming)
+    completedTab.onclick = (loadCompleted)
+    requestTab.onclick = (loadRequest)
+  })
+  function loadCalendar(serviceDate) {
+    const dt = new Date();
+    if (nav !== 0) {
+      dt.setMonth(new Date().getMonth() + nav);
+    }
+    const day = dt.getDate();
+    const month = dt.getMonth();
+    const year = dt.getFullYear();
+    const firstDayOfMonth = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    
+    const dateString = firstDayOfMonth.toLocaleDateString('en-us', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    });
+    const paddingDays = weekdays.indexOf(dateString.split(', ')[0]);
+
+    document.getElementById('monthDisplay').innerText = 
+      `${dt.toLocaleDateString('en-us', { month: 'long', year: 'numeric'})}`;
+
+    calendar.innerHTML = '';
+    for(let i = 1; i <= paddingDays + daysInMonth; i++) {
+      const daySquare = document.createElement('div');
+      daySquare.classList.add('day');
+
+      if (i > paddingDays) {
+        const calendarDay = i - paddingDays
+        daySquare.innerText = calendarDay;
+        const calendarDate = year+'-'+(month+1<10?'0'+(month+1):month+1)+'-'+(calendarDay<10?'0'+calendarDay:calendarDay)
+        if(serviceDate!=null && serviceDate[calendarDate]!=null){
+          const eventTitle = document.createElement('div');
+          eventTitle.classList.add('service-title')
+          eventTitle.innerText = serviceDate[calendarDate];
+          daySquare.classList.add('service-day')
+          daySquare.append(eventTitle)
+          daySquare.id = "service-day"
+          daySquare.onclick = (()=>{
+            alert(serviceDate[calendarDate])
+          })
+        }
+        if (nav == 0 && calendarDay === day) {
+          daySquare.id = 'currentDay';
+        }
+        else if (nav<0 || nav == 0 && calendarDay < day){
+          daySquare.style.opacity = 0.5
+        }
+      }
+      else daySquare.style.visibility = 'hidden';
+      calendar.appendChild(daySquare);    
+    }
+  }
+    function acceptService(userID, serviceID, appliedArtist, isClient, artistUsername){
+      updateDoc(doc(database, 'Booking', userID), {
+        OngoingBooking: arrayUnion(serviceID),
+        BookingRequest: arrayRemove(serviceID)
+      }).then(async()=>{
+        await new Promise((resolve)=>{
+          const arrayLimit = appliedArtist.length - 1
+          if(arrayLimit==-1){
+            resolve()
+            return
+          }
+          appliedArtist.forEach((artistID,index)=>{
+            updateDoc(doc(database, 'Booking', artistID), {
+              BookingRequest: arrayRemove(serviceID)
+            })
+            if(index==arrayLimit)
+            resolve()
+          })
+        })
+        updateDoc(doc(database, 'Services', serviceID), isClient ? {
+          ArtistID: userID,
+          ArtistUsername: artistUsername,
+          ServiceStatus: "ongoing",
+          AppliedArtist: []
+        }:{
+          ServiceStatus: "ongoing",
+          AppliedArtist: []
+        }).then(()=> window.location.reload())
+      })
+    }
+  </script>
+  </body>
+</html>
