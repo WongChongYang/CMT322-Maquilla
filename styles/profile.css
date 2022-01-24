@@ -1,0 +1,326 @@
+.profile-section{
+    padding: 80px 0;
+    background-color: #fff5f5;
+    display: flex;
+    justify-content: center;
+}
+.profile-body{
+    background-color: white;
+    display: flex;
+}
+.profile-card{
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    padding-top: 20px;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffe0e0;
+    box-shadow: 0 0 10px #55555555;
+    font-size: 20px;
+}
+#profile-pic-frame{
+    height: 200px;
+    width: 200px;
+    background-color: white;
+    border: 4px solid white;
+    display: flex;
+    border-radius: 100px;
+    align-items: center;
+    justify-content: center;
+    margin: 30px 0;
+    overflow: hidden;
+}
+#profile-pic-button{
+    display: none;
+    visibility: hidden;
+    position: absolute;
+    height: inherit;
+    width: inherit;
+    border-radius: inherit;
+}
+#profile-pic{
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+#profile-pic:hover +#profile-pic-button, #profile-pic-button:hover{
+    visibility: visible;
+    opacity: 0.8;
+    box-shadow: 0 0 15px #55555555;
+    cursor: pointer;
+}
+#username{
+    font-family: Avenir;
+    margin-bottom: 10px;
+}
+.field{
+    display: flex;
+    align-items: center;
+}
+.location{
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+#location{
+    font-family: Cinzel;
+    padding-left: 10px;
+}
+.footer{
+    background-color: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+    width: 100%;
+}
+.rating{
+    margin: 5px;
+    font-family: Avenir;
+    font-size: 18px;
+}
+#rating{
+    margin-left: 10px;
+}
+.profile-info{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    
+}
+.profile-description{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 400px;
+    height: 100%;
+    margin: 20px 60px;
+}
+#name{
+    font-family: Avenir;
+    font-size: 30px;
+    font-weight: bolder;
+    margin-bottom: 20px;
+}
+.contact{
+    font-size: 20px;
+    font-family: Cinzel;
+}
+#contact{
+    margin-left: 10px;
+}
+hr{
+    border: none;
+    height: 2px;
+    background-color: #FFDEDE;
+    margin: 30px 0;
+}
+#bio{
+    font-family: AvenirLight;
+    font-style: italic;
+    margin-bottom: 25px;
+}
+#price-range{
+    display: none;
+    font-size: 18px;
+    font-family: Avenir;
+}
+#price-range span{
+    display: flex;
+    font-style: normal;
+    align-items: center;
+    margin: 0 5px;
+}
+.social-media a{
+    height: 60px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+.social-media a:hover i{
+    color: pink;
+    transition: .3s;
+}
+#book-button{
+    display: none;
+    width: 100px;
+    height: 40px;
+    border-radius: 25px;
+    margin: 0 20px;
+    outline: none;
+    border: none;
+    background-color: #FFDEDE;
+    cursor: pointer;
+    font-family: Cinzel;
+    font-size: 15px;
+}
+#book-button:hover{
+    background-image: linear-gradient(to right, #FFDEDE, pink, #FFDEDE );
+}
+#grid{
+    display: grid;
+    width: 100%;
+    grid-template-columns: 300px 300px 300px;
+    grid-gap: 80px;
+    padding: 80px;
+    justify-content: center;
+}
+.post-item{
+    height: 300px;
+    width: 300px;
+    border: 5px solid white;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 10px #55555555;
+}
+.post-item >img{
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+.post-item:hover{
+    box-shadow: 0 0 10px pink;
+    cursor: pointer;
+}
+.post-item:hover >img{
+    transition: .3s;
+    height: 105%;
+}
+h1{
+    font-family: Cinzel;
+    font-weight: normal;
+    font-size: 40px;
+    text-align: center;
+    margin: 20px;
+}
+main{
+    background-color: #fff5f5;
+    height: 100%;
+    width: 100%;
+}
+#booking-section{
+    display: flex;
+    visibility: hidden;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: #55555555;
+    z-index: 1;
+    top: 0;
+    transition: .5s;
+}
+.booking-form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 350px;
+    width: 700px;
+    margin-top: 80px;
+    padding-bottom: 30px;
+    background-color: white;
+    box-shadow: 0 0 10px #55555555;
+    border-radius: 10px;
+}
+.form-title{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+}
+#close-button{
+    position: absolute;
+    right: 8%;
+}
+#close-button:hover{
+    cursor: pointer;
+    color: pink;
+    transition: .2s;
+}
+#service-list{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 5px 15px;
+    background-color: #FFF4ED;
+    overflow-y: scroll;
+}
+h2{
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#service-item{
+    display: flex;
+    height: 100px;
+    width: 100%;
+    margin: 5px 0;
+    background-color: white;
+}
+#date-and-time{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #FFE8E0;
+    margin: 10px;
+}
+#service-date{
+    font-family: Cinzel;
+    font-size: 25px;
+    margin-bottom: 3px;
+}
+#service-time{
+    font-family: Cinzel;
+    font-size: 15px;
+    font-weight: 100;
+}
+.detail-container{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+    overflow: hidden;
+}
+.service-field{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 3px 5px;
+}
+#service-title{
+    font-family: Avenir;
+}
+#service-location, #service-payment{
+    margin-left: 10px;
+    width: 100%;
+}
+.detail{
+    font-family: Avenir;
+    font-size: 13px;
+}
+.detail >i{
+    font-size: 20px;
+}
+#service-button{
+    padding: 10px;
+    border-radius: 25px;
+    outline: none;
+    border: none;
+    background-color: #FFE8E0;
+    font-family: Cinzel;
+    font-size: 15px;
+}
+#service-button:not(:disabled):hover{
+    background-color: #FFF4ED;
+    cursor: pointer;
+}
