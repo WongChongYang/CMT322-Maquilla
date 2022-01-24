@@ -189,7 +189,18 @@
                   serviceUsername.textContent = data["ArtistUsername"]
                   serviceUsername.onclick = ()=>window.location.href = "profile.html?user="+data["ArtistUsername"]
                   serviceButton.textContent = "Waiting artist to accept"
-                  serviceButton.disabled = true
+                  serviceButton.onclick = ()=>{
+                    updateDoc(doc(database, 'Booking', data["ArtistID"]), {
+                      BookingRequest: arrayRemove(serviceID)
+                    })
+                    updateDoc(doc(database, 'Services', serviceID), {
+                      ArtistID: null,
+                      ArtistUsername: null,
+                      ServiceStatus: "opne"
+                    }).then(()=>{
+                      window.location.reload()
+                    })
+                  }
                 }
               }
               else{
