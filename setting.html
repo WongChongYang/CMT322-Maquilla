@@ -133,7 +133,7 @@
                 alertMessage.textContent = "Please enter a minimum price";
                 else if(!priceTo.checkValidity())
                 alertMessage.textContent = "Please enter a maximum price";
-                else if(priceFrom.value > priceTo.value)
+                else if(parseFloat(priceFrom.value) > parseFloat(priceTo.value))
                 alertMessage.textContent = "'To' price should be higher than 'From' price";
                 else
                 setUserProfile();
