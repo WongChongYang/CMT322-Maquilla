@@ -156,9 +156,12 @@
         function setUserProfile(){
             alertMessage.textContent = "Changes have been saved succuessfully";
             if(user.displayName==null){
+                updateProfile(user, {
+                    displayName: usernameInput.value
+                })
                 setDoc(userDoc, {
                     Username: usernameInput.value,
-                    Rating: parent(5)
+                    Rating: parseFloat(5)
                 })
                 setDoc(doc(database, "Booking", user.uid), {
                     OngoingBooking: [],
@@ -175,15 +178,6 @@
                 PriceFrom: parseInt(priceFrom.value),
                 PriceTo: parseInt(priceTo.value),
             }, {merge: true}).then(()=>{
-                if(usernameInput.value!=user.displayName){
-                    updateProfile(user, {
-                    displayName: usernameInput.value
-                    }).then(()=>{
-                        location.reload()
-                        location.href = "profile.html";
-                    })
-                }
-                else
                 location.href = "profile.html";
             }).catch((error) => {
                 alertMessage.textContent = error.message;
