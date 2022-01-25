@@ -40,6 +40,7 @@
         <span id="upcoming-tab">Upcoming</span>
         <span id="completed-tab">Completed<h4 class="notification"></h4></span>
         <span id="request-tab">Request<h4 class="notification"></h4></span>
+        
       </nav>
       <div id="booking-table">
         <template id="service-template">
@@ -197,7 +198,7 @@
                     updateDoc(doc(database, 'Services', serviceID), {
                       ArtistID: null,
                       ArtistUsername: null,
-                      ServiceStatus: "opne"
+                      ServiceStatus: "open"
                     }).then(()=>{
                       window.location.reload()
                     })
