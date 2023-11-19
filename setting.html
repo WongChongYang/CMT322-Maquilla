@@ -62,13 +62,11 @@
             </div>
         </form>
     </main>
-    <script type="module" src="firebase.js"></script>
     <script type="module">
-    import { getAuth, updateProfile } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { auth, database, Auth, Firestore } from "/firebase.js"
+    const { getAuth, updateProfile } = Auth
+    const { getFirestore, doc, getDoc, collection, getDocs, setDoc } = Firestore
 
-    const auth = getAuth();
-    const database = getFirestore();
     const usernameInput = document.getElementById("username-input");
     const nameInput = document.getElementById("name-input");
     const bioInput = document.getElementById("bio-input");

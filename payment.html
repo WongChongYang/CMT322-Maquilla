@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles/form.css">
     <link rel="stylesheet" href="styles/fonts.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="module" src="firebase.js"></script>
   </head>
 <body>
     <header> 
@@ -48,99 +49,96 @@
     </div>
   </div>
 </main>
-<script type="module" src="firebase.js"></script>
-<script type="module">  
-    import { getAuth, updateProfile } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"
-    import{ arrayRemove,doc,getDoc,setDoc,collection,addDoc,updateDoc,deleteDoc,deleteField,arrayUnion} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-    import { auth, database, storage } from "/firebase.js"
+<script type="module">
+  import { auth, database, Auth, Firestore } from "/firebase.js"  
+  const { getAuth, updateProfile } = Auth
+  const { arrayRemove,doc,getDoc,setDoc,collection,addDoc,updateDoc,deleteDoc,deleteField,arrayUnion} = Firestore
 
-    let ServiceBox = document.getElementById("ServiceBox");
-    let CardNumberBox = document.getElementById("CardNumberBox");
-    let ExpiredDateBox = document.getElementById("ExpiredDateBox");
-    let PaymentBox = document.getElementById("PaymentBox");
-    let FeedbackBox = document.getElementById("FeedbackBox");
-    let RatingBox= document.getElementById("RatingBox");
-    let ConfirmBtn = document.getElementById("ConfirmBtn");
+  let ServiceBox = document.getElementById("ServiceBox");
+  let CardNumberBox = document.getElementById("CardNumberBox");
+  let ExpiredDateBox = document.getElementById("ExpiredDateBox");
+  let PaymentBox = document.getElementById("PaymentBox");
+  let FeedbackBox = document.getElementById("FeedbackBox");
+  let RatingBox= document.getElementById("RatingBox");
+  let ConfirmBtn = document.getElementById("ConfirmBtn");
 
-    const serviceid = (new URLSearchParams(window.location.search)).get("serviceID")
-   
-    const serviceDoc = doc(database, "Services", serviceid)
-    auth.onAuthStateChanged(currentUser=>{
-      const user = currentUser
-      const uid = user.uid
+  const serviceid = (new URLSearchParams(window.location.search)).get("serviceID")
+  
+  const serviceDoc = doc(database, "Services", serviceid)
+  auth.onAuthStateChanged(currentUser=>{
+    const user = currentUser
+    const uid = user.uid
 
-      getDoc(serviceDoc).then((snapshot)=>{
-        const data=snapshot.data()
-        ServiceBox.textContent= data["ServiceTitle"]
-        PaymentBox.textContent= data["ServicePay"]
-        if (data["ServiceStatus"]=="ongoing"){
-          ConfirmBtn.onclick=((E)=>{
-          E.preventDefault()
-          savePayment(data)
-          })
-        }
-        else{
-          document.getElementById("hide").style.display="none"
-          document.getElementById("hide2").style.display="none"
-          ConfirmBtn.onclick=((E)=>{
-          E.preventDefault()
-          muaRate(data)
+    getDoc(serviceDoc).then((snapshot)=>{
+      const data=snapshot.data()
+      ServiceBox.textContent= data["ServiceTitle"]
+      PaymentBox.textContent= data["ServicePay"]
+      if (data["ServiceStatus"]=="ongoing"){
+        ConfirmBtn.onclick=((E)=>{
+        E.preventDefault()
+        savePayment(data)
         })
-        }
+      }
+      else{
+        document.getElementById("hide").style.display="none"
+        document.getElementById("hide2").style.display="none"
+        ConfirmBtn.onclick=((E)=>{
+        E.preventDefault()
+        muaRate(data)
       })
-      function savePayment(data) {
-        setRating(data["ArtistID"], parseFloat(RatingBox.value))
-        updateDoc(serviceDoc,{ServiceStatus:"completed"})
-        setDoc(doc(database, "Payment", serviceid), {
-          ClientID: uid,
-          ClientUsername : user.displayName,
-          ArtistID: data["ArtistID"],
-          ArtistUsername :data["ArtistUsername"],
-          DateOfService: data["DateOfService"],
-          TimeOfService: data["TimeOfService"],
-          ServiceLocation: data["ServiceLocation"],
-          ServiceTitle: data["ServiceTitle"],
-          CardNumberPay: CardNumberBox.value,
-          ExpiredDatePay : ExpiredDateBox.value,
-          ServicePay :  data["ServicePay"],
-          ClientFeedback: FeedbackBox.value,
-          ClientRating: parseFloat(RatingBox.value),
-        }).then(()=>{
-          updateDoc(doc(database, 'Booking', data["ArtistID"]), {
-            CompletedBooking : arrayUnion(serviceid),
-            OngoingBooking: arrayRemove(serviceid)
-          })
-          updateDoc(doc(database, 'Booking',uid), {
-            CompletedBooking : arrayUnion(serviceid),
-            OngoingBooking: arrayRemove(serviceid)
-          }).then(()=>window.location.href="booking.html")
-        })
-      }
-      function muaRate(data){
-        setRating(data["ArtistID"], parseFloat(RatingBox.value))
-        updateDoc(doc(database, 'Payment', serviceid), {
-          ArtistFeedback: FeedbackBox.value,
-          ArtistRating:parseFloat(RatingBox.value),
-        }).then(()=>{
-          deleteDoc(doc(database, 'Services', serviceid)).then(()=>{
-            window.location.href="booking.html"
-          })
-        })
-      }
-      function setRating(userID, rating){
-        const userDoc = doc(database, 'Users', userID)
-        getDoc(userDoc).then(userData=>{
-          let userRating = userData.data()["Rating"]
-          userRating = (rating+userRating)/2
-          updateDoc(userDoc, {
-            Rating: userRating
-          })
-        })
       }
     })
-    
-  </script>
-   <script type="module" src="navbar.js"></script>
+    function savePayment(data) {
+      setRating(data["ArtistID"], parseFloat(RatingBox.value))
+      updateDoc(serviceDoc,{ServiceStatus:"completed"})
+      setDoc(doc(database, "Payment", serviceid), {
+        ClientID: uid,
+        ClientUsername : user.displayName,
+        ArtistID: data["ArtistID"],
+        ArtistUsername :data["ArtistUsername"],
+        DateOfService: data["DateOfService"],
+        TimeOfService: data["TimeOfService"],
+        ServiceLocation: data["ServiceLocation"],
+        ServiceTitle: data["ServiceTitle"],
+        CardNumberPay: CardNumberBox.value,
+        ExpiredDatePay : ExpiredDateBox.value,
+        ServicePay :  data["ServicePay"],
+        ClientFeedback: FeedbackBox.value,
+        ClientRating: parseFloat(RatingBox.value),
+      }).then(()=>{
+        updateDoc(doc(database, 'Booking', data["ArtistID"]), {
+          CompletedBooking : arrayUnion(serviceid),
+          OngoingBooking: arrayRemove(serviceid)
+        })
+        updateDoc(doc(database, 'Booking',uid), {
+          CompletedBooking : arrayUnion(serviceid),
+          OngoingBooking: arrayRemove(serviceid)
+        }).then(()=>window.location.href="booking.html")
+      })
+    }
+    function muaRate(data){
+      setRating(data["ArtistID"], parseFloat(RatingBox.value))
+      updateDoc(doc(database, 'Payment', serviceid), {
+        ArtistFeedback: FeedbackBox.value,
+        ArtistRating:parseFloat(RatingBox.value),
+      }).then(()=>{
+        deleteDoc(doc(database, 'Services', serviceid)).then(()=>{
+          window.location.href="booking.html"
+        })
+      })
+    }
+    function setRating(userID, rating){
+      const userDoc = doc(database, 'Users', userID)
+      getDoc(userDoc).then(userData=>{
+        let userRating = userData.data()["Rating"]
+        userRating = (rating+userRating)/2
+        updateDoc(userDoc, {
+          Rating: userRating
+        })
+      })
+    }
+  })
+</script>
 </body>
 </html>
 

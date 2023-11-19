@@ -6,8 +6,8 @@
     <title>Request Service</title>
     <link rel="stylesheet" href="styles/fonts.css">
     <link rel="stylesheet" href="styles/form.css">
-    <script type="module" src="navbar.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="module" src="navbar.js"></script>
   </head>
 <body>
     <header>
@@ -44,42 +44,42 @@
     </form>
   </div>
 </main>
-<script type="module">    
-    import { doc, collection, addDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-    import { auth, database } from "/firebase.js"
-    let ServiceBox = document.getElementById("ServiceBox");
-    let LocationBox = document.getElementById("LocationBox");
-    let DateBox = document.getElementById("DateBox");
-    let TimeBox= document.getElementById("TimeBox");
-    let ServicePayBox= document.getElementById("ServicePayBox");
-    let servicebutton = document.getElementById("service-button");
-    auth.onAuthStateChanged(currentUser=>{
-      const user = currentUser
-      const uid = user.uid
-      servicebutton.onclick = (e)=>{
-        e.preventDefault()
-        addDoc(collection(database, 'Services'), {
-          ClientID: uid,
-          ClientUsername : user.displayName,
-          ArtistID: null,
-          ArtistUsername : null,
-          ServiceTitle: ServiceBox.value,
-          ServiceLocation: LocationBox.value,
-          DateOfService: DateBox.value,
-          TimeOfService: TimeBox.value,
-          ServiceStatus: "open",
-          AppliedArtist : [],
-          ServicePay : parseFloat(ServicePayBox.value)
-        }).then((Service)=>{
-          updateDoc(doc(database, 'Booking', uid), {
-            OngoingBooking : arrayUnion(Service.id)
-          }).then(()=>{
-            alert("The service has been added!")
-            window.location.href = 'booking.html'
-          });
-        })
-      }
-    })
-  </script>
+<script type="module">
+  import { auth, database, Firestore } from "/firebase.js"  
+  const { doc, collection, addDoc, updateDoc, arrayUnion } = Firestore
+  let ServiceBox = document.getElementById("ServiceBox");
+  let LocationBox = document.getElementById("LocationBox");
+  let DateBox = document.getElementById("DateBox");
+  let TimeBox= document.getElementById("TimeBox");
+  let ServicePayBox= document.getElementById("ServicePayBox");
+  let servicebutton = document.getElementById("service-button");
+  auth.onAuthStateChanged(currentUser=>{
+    const user = currentUser
+    const uid = user.uid
+    servicebutton.onclick = (e)=>{
+      e.preventDefault()
+      addDoc(collection(database, 'Services'), {
+        ClientID: uid,
+        ClientUsername : user.displayName,
+        ArtistID: null,
+        ArtistUsername : null,
+        ServiceTitle: ServiceBox.value,
+        ServiceLocation: LocationBox.value,
+        DateOfService: DateBox.value,
+        TimeOfService: TimeBox.value,
+        ServiceStatus: "open",
+        AppliedArtist : [],
+        ServicePay : parseFloat(ServicePayBox.value)
+      }).then((Service)=>{
+        updateDoc(doc(database, 'Booking', uid), {
+          OngoingBooking : arrayUnion(Service.id)
+        }).then(()=>{
+          alert("The service has been added!")
+          window.location.href = 'booking.html'
+        });
+      })
+    }
+  })
+</script>
 </body>
 </html>

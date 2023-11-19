@@ -1,6 +1,6 @@
-import { ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
-import { createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-import { auth, storage } from "/firebase.js"
+import { auth, files, Auth, Storage } from "/firebase.js"
+const { ref, getDownloadURL } = Storage
+const { createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, signOut } = Auth
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -112,7 +112,7 @@ class NavBar extends HTMLElement {
         const shadowRoot = this.shadowRoot;
         shadowRoot.appendChild(template.content);
 
-        getDownloadURL(ref(storage, 'images/Maquilla.png')).then((url)=>{
+        getDownloadURL(ref(files, 'images/Maquilla.png')).then((url)=>{
             shadowRoot.getElementById("icon").setAttribute('src', url);
         });
 

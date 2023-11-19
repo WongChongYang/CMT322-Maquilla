@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles/fonts.css">
     <link rel="stylesheet" href="styles/searchBar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="module" src="navbar.js"></script>
   </head>
   <body>
     <header>
@@ -68,9 +69,9 @@
       </div>
     </main>
   <script type="module">
-  import { doc, collection, getDoc, getDocs, setDoc, arrayUnion, updateDoc, arrayRemove  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"
-  import { ref, getDownloadURL, listAll, uploadBytesResumable, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"
-  import { auth, database, storage } from "/firebase.js"
+  import { auth, database, Firestore, Storage } from "/firebase.js"
+  const { doc, collection, getDoc, getDocs, setDoc, arrayUnion, updateDoc, arrayRemove  } = Firestore
+  const { ref, getDownloadURL, listAll, uploadBytesResumable, deleteObject } = Storage
 
   const serviceTable = document.getElementById("booking-table")
   const template = document.getElementById("template")
@@ -133,6 +134,5 @@
     })
   }
   </script>
-  <script type="module" src="navbar.js"></script>
   </body>
 </html>

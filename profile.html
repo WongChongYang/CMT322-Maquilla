@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="styles/fonts.css">
         <link rel="stylesheet" href="styles/profile.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script type="module" src="navbar.js"></script>
     </head>
     <body>
         <header>
@@ -90,10 +91,10 @@
             </div>
         </section>
         <script type="module">
-        import { getAuth, updateProfile } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"
-        import { getFirestore, doc, collection, getDoc, getDocs, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"
-        import { getStorage, ref, getDownloadURL, listAll, uploadBytesResumable, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"
-        import { auth, database, storage } from "/firebase.js"
+        import { auth, database, files, Auth, Firestore, Storage } from "/firebase.js"
+        const { getAuth, updateProfile } = Auth
+        const { getFirestore, doc, collection, getDoc, getDocs, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField} = Firestore
+        const { getStorage, ref, getDownloadURL, listAll, uploadBytesResumable, deleteObject } = Storage
 
         const profilePic = document.getElementById("profile-pic")
         const username = document.getElementById("username")
@@ -127,11 +128,11 @@
                 return
 
                 //Check if the user has a profile picture
-                const profilePicRef = ref(storage, "users/"+uid+"/avatar.jpg")
-                listAll(ref(storage, "users/"+uid)).then(res=>{
+                const profilePicRef = ref(files, "users/"+uid+"/avatar.jpg")
+                listAll(ref(files, "users/"+uid)).then(res=>{
                     let storageRef = profilePicRef
                     if(res.items.length == 0)
-                    storageRef = ref(storage, "images/Maquilla.png")
+                    storageRef = ref(files, "images/Maquilla.png")
                     getDownloadURL(storageRef).then(url=>{
                     profilePic.src = url
                     }, error=>console.log(error.message))
@@ -139,7 +140,7 @@
                 
                 //If is owned profile, add upload button
                 if(isOwnedProfile){
-                    getDownloadURL(ref(storage, "images/upload.png")).then((url)=>{
+                    getDownloadURL(ref(files, "images/upload.png")).then((url)=>{
                     const profilePicButton = document.getElementById("profile-pic-button")
                     profilePicButton.style.display = "block" 
                     profilePicButton.src = url
@@ -152,7 +153,7 @@
                     grid.appendChild(post)
                     post.onclick = (()=>{
                         const postID = Date.now().toString()
-                        const postRef = ref(storage, "users/"+uid+"/uploads/"+postID+".jpg")
+                        const postRef = ref(files, "users/"+uid+"/uploads/"+postID+".jpg")
                         uploadImage(postRef, postID)
                         })
                     });
@@ -283,7 +284,7 @@
                         else
                         priceRange.textContent = "$ "+data["PriceFrom"]+" - $ "+data["PriceTo"]
                     }
-                    listAll(ref(storage, "users/"+uid+"/uploads")).then((folder)=>{
+                    listAll(ref(files, "users/"+uid+"/uploads")).then((folder)=>{
                         folder.items.forEach(async(postRef) => {
                             let postImg = document.createElement("img")
                             postImg.className = "post-pic"
@@ -294,7 +295,7 @@
                             grid.appendChild(post)
                             if(isOwnedProfile){
                                 post.onclick = (()=>{
-                                    deleteObject(ref(storage, postRef.fullPath))
+                                    deleteObject(ref(files, postRef.fullPath))
                                     .then(window.location.reload()) 
                                 })
                             }
@@ -304,6 +305,5 @@
             })
         })
         </script>
-        <script type="module" src="navbar.js"></script>
     </body>
 </html>

@@ -1,5 +1,5 @@
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"
-import { ref, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js"
+import { ref, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-storage.js"
 import { database, storage } from "/firebase.js"
 
 const template = document.createElement('template');

@@ -64,10 +64,10 @@
         </div>
     </main>
     <script type="module">
-        import { auth, database, storage } from "/firebase.js"
-        import { updateProfile } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"
-        import { doc, collection, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"
-        import { ref, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js"
+        import { auth, database, files, Auth, Firestore, Storage } from "/firebase.js"
+        const { updateProfile } = Auth
+        const { doc, collection, getDoc, getDocs } = Firestore
+        const { ref, getDownloadURL, listAll } = Storage
 
         const button = document.getElementById("search-button")
 
@@ -96,10 +96,10 @@
                         const profileCard = template.content.cloneNode(true)
                         const profilePic = profileCard.getElementById("profile-pic")
                         const priceRange = profileCard.getElementById("price-range")
-                        listAll(ref(storage, "users/"+uid)).then((folder)=>{
-                            var profilePicRef = ref(storage, "users/"+uid+"/avatar.jpg")
+                        listAll(ref(files, "users/"+uid)).then((folder)=>{
+                            var profilePicRef = ref(files, "users/"+uid+"/avatar.jpg")
                             if(folder.items.length == 0)
-                            profilePicRef = ref(storage, "images/Maquilla.png")
+                            profilePicRef = ref(files, "images/Maquilla.png")
                             getDownloadURL(profilePicRef).then(url=>{
                             profilePic.src = url
                             }, error=>console.log(error.message))

@@ -6,7 +6,7 @@
         <link rel="stylesheet" href="styles/fonts.css">
         <link rel="stylesheet" href="styles/index.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        
+        <script type="module" src="navbar.js"></script>
     </head>
     <body>
         <header>
@@ -18,7 +18,7 @@
                 <p id="paragraph"></p>
             </div>
             <span>
-                <img id="logo">
+                    <img id="logo" alt="">
             </span>
         </section>
         <section class="testimonial">
@@ -26,38 +26,36 @@
                 <h3 id="artistName"></h3>
                 <h2 id="artistComment"></h2>
             </span>
-            <img id="flower">
+            <img id="flower" alt="">
             <span class="slideshow" id="right">
                 <h3 id="clientName"></h3>
                 <h2 id="clientComment"></h2>
             </span>
         </section>
-        <script type="module" src="navbar.js"></script>
         <script type="module">
-            import { collection, doc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-            import { ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
-            import { database, storage } from "/firebase.js"
-            const homeRef = collection(database, 'Homepage');
-            getDocs(homeRef).then((snapshot) => {
-                const data = snapshot.docs[0].data()
-                document.getElementById("tagline").innerText = data.Tagline
-                document.getElementById("paragraph").innerText = data.Paragraph1 + '\n' + data.Paragraph2
+        import { files, Storage, database, Firestore } from "/firebase.js"
+        const { getFirestore, collection, doc, getDocs } = Firestore
+        const { getStorage, ref, getDownloadURL } = Storage
+        const homeRef = collection(database, 'Homepage');
+        getDocs(homeRef).then((snapshot) => {
+            const data = snapshot.docs[0].data()
+            document.getElementById("tagline").innerText = data.Tagline
+            document.getElementById("paragraph").innerText = data.Paragraph1 + '\n' + data.Paragraph2
 
-                const testimonial = snapshot.docs[1].data()
-                document.getElementById("artistName").innerText = testimonial.ArtistTestimonial.Name
-                document.getElementById("artistComment").innerText = testimonial.ArtistTestimonial.Comment
-                document.getElementById("clientName").innerText = testimonial.ClientTestimonial.Name
-                document.getElementById("clientComment").innerText = testimonial.ClientTestimonial.Comment
-            });
+            const testimonial = snapshot.docs[1].data()
+            document.getElementById("artistName").innerText = testimonial.ArtistTestimonial.Name
+            document.getElementById("artistComment").innerText = testimonial.ArtistTestimonial.Comment
+            document.getElementById("clientName").innerText = testimonial.ClientTestimonial.Name
+            document.getElementById("clientComment").innerText = testimonial.ClientTestimonial.Comment
+        });
 
-            getDownloadURL(ref(storage, 'images/Maquilla.png')).then((url)=>{
-                document.getElementById("logo").setAttribute('src', url);
-            });
+        getDownloadURL(ref(files, 'images/Maquilla.png')).then((url)=>{
+            document.getElementById("logo").setAttribute('src', url);
+        });
 
-            getDownloadURL(ref(storage, 'images/homepage/home-flower.png')).then((url)=>{
-                document.getElementById("flower").setAttribute('src', url);
-            });
-        </script>
+        getDownloadURL(ref(files, 'images/homepage/home-flower.png')).then((url)=>{
+            document.getElementById("flower").setAttribute('src', url);
+        });
+    </script>
     </body>
 </html>
-
