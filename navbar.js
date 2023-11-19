@@ -8,7 +8,7 @@ template.innerHTML = `
     <link rel="stylesheet" href="styles/navbar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <div id="navbar">
-        <a href="index.html"><img id="icon"></a>
+        <a href="/"><img id="icon"></a>
         <nav class="menu">
             <span><a href="booking.html">Booking</a></span>
             <span><a href="service.html">Makeup Service</a></span>
