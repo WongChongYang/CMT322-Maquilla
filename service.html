@@ -77,8 +77,11 @@
   const template = document.getElementById("template")
   const searchButton = document.getElementById("search-button")
 
-  auth.onAuthStateChanged(currentUser=>{  
-    var uid = currentUser.uid
+  auth.onAuthStateChanged(currentUser=>{
+    var uid = "";
+    if(currentUser){
+      var uid = currentUser.uid
+    }
     searchService(uid)
     searchButton.onclick = ()=>{
       serviceTable.innerHTML = ''

@@ -110,7 +110,7 @@
 
         auth.onAuthStateChanged(currentUser=>{    
             getDocs(collection(database, 'Users')).then((snapshot) => {
-                var uid
+                var uid = "";
                 if(currentUser!=null)
                 uid = currentUser.uid
                 var isOwnedProfile = true
@@ -187,14 +187,14 @@
                         booking.style.transition = ".2s";
                     })
 
-                    getDoc(doc(database, "Booking", currentUser.uid)).then(snapshot=>{
+                    getDoc(doc(database, "Booking", uid)).then(snapshot=>{
                         const serviceList = document.getElementById("service-list")
                         const template = document.getElementById("template")
                         const month = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
                         snapshot.data()["OngoingBooking"].forEach(async(serviceID)=>{
                             const serviceDoc = doc(database, "Services", serviceID)
                             const serviceDetails = (await getDoc(serviceDoc)).data()
-                            if(serviceDetails["ServiceStatus"]=="open" && serviceDetails["ClientID"]==currentUser.uid &&(serviceDetails["ArtistID"]==null || serviceDetails["ArtistID"]==uid)){
+                            if(serviceDetails["ServiceStatus"]=="open" && serviceDetails["ClientID"]==uid &&(serviceDetails["ArtistID"]==null || serviceDetails["ArtistID"]==uid)){
                                 const ongoingService = template.content.cloneNode(true)
                                 const serviceDate = serviceDetails["DateOfService"].split("-")
                                 ongoingService.getElementById("service-date").textContent = month[parseInt(serviceDate[1])-1] + " " + serviceDate[2] + " , " + serviceDate[0]

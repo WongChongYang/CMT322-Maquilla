@@ -76,10 +76,14 @@
         
         const profileRef = collection(database, 'Users')
         auth.onAuthStateChanged(currentUser=>{
-            searchArtist(currentUser.uid)
+            var uid = "";
+            if(currentUser){
+                var uid = currentUser.uid
+            }
+            searchArtist(uid)
             button.onclick = (()=>{
                 grid.innerHTML = ''
-                searchArtist(currentUser.uid)
+                searchArtist(uid)
             })
         })
         function searchArtist(currentuid){
