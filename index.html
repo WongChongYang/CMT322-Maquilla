@@ -40,7 +40,7 @@
         getDocs(homeRef).then((snapshot) => {
             const data = snapshot.docs[0].data()
             document.getElementById("tagline").innerText = data.Tagline
-            document.getElementById("paragraph").innerText = data.Paragraph1 + '\n' + data.Paragraph2 + '\n' + data.Paragraph2
+            document.getElementById("paragraph").innerText = data.Paragraph1 + '\n' + data.Paragraph2 + '\n' + data.Paragraph3
 
             const testimonial = snapshot.docs[1].data()
             document.getElementById("artistName").innerText = testimonial.ArtistTestimonial.Name
