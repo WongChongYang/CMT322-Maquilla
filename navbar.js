@@ -10,9 +10,9 @@ template.innerHTML = `
     <div id="navbar">
         <a href="./"><img id="icon"></a>
         <nav class="menu">
-            <span><a href="booking.html">Booking</a></span>
-            <span><a href="service.html">Makeup Service</a></span>
-            <span><a href="artist.html">Makeup Artist</a></span>
+            <span><a href="./booking.html">Booking</a></span>
+            <span><a href="./service.html">Makeup Service</a></span>
+            <span><a href="./artist.html">Makeup Artist</a></span>
         </nav>
         <span>
             <span id="account-tab">
@@ -22,9 +22,9 @@ template.innerHTML = `
             <div id="drop-down-menu">
                 <div class="drop-down-pointer"></div>
                 <ul>
-                    <li class="drop-down-list"><a href="setting.html"><i class="fa fa-cog"></i>Setting</a></li>
+                    <li class="drop-down-list"><a href="./setting.html"><i class="fa fa-cog"></i>Setting</a></li>
                     <hr>
-                    <li class="drop-down-list"><a id="logout" href="index.html"><i class="fa fa-sign-out"></i>Log Out</a></li>
+                    <li class="drop-down-list"><a id="logout" href="./"><i class="fa fa-sign-out"></i>Log Out</a></li>
                 </ul>
             </div>
         </span>
@@ -148,12 +148,12 @@ class NavBar extends HTMLElement {
             if(user && user.emailVerified){
                 const displayName = user.displayName;
                 if (displayName == null){
-                    location.href = "setting.html";
+                    location.href = "./setting.html";
                 }
                 else{
                     shadowRoot.getElementById("account").textContent = displayName;
                     shadowRoot.getElementById("drop-down-menu").style.display = "block";
-                    account.onclick = (()=>{location.href = "profile.html?user="+displayName;});
+                    account.onclick = (()=>{location.href = "./profile.html?user="+displayName;});
                 }
             }
             else{
@@ -195,8 +195,8 @@ class NavBar extends HTMLElement {
                     const user = userCredential.user;
                     if(user.emailVerified){
                         if(user.displayName==null)
-                        location.href = "setting.html";
-                        else location.href = "booking.html";
+                        location.href = "./setting.html";
+                        else location.href = "./booking.html";
                     }
                     else{
                         sendEmailVerification(user)
