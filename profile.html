@@ -91,7 +91,7 @@
             </div>
         </section>
         <script type="module">
-        import { auth, database, files, Auth, Firestore, Storage } from "/firebase.js"
+        import { auth, database, files, Auth, Firestore, Storage } from "./firebase.js"
         const { getAuth, updateProfile } = Auth
         const { getFirestore, doc, collection, getDoc, getDocs, setDoc, updateDoc, arrayUnion, arrayRemove, deleteField} = Firestore
         const { getStorage, ref, getDownloadURL, listAll, uploadBytesResumable, deleteObject } = Storage
