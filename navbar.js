@@ -1,4 +1,4 @@
-import { auth, files, Auth, Storage } from "/firebase.js"
+import { auth, files, Auth, Storage } from "./firebase.js"
 const { ref, getDownloadURL } = Storage
 const { createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, signOut } = Auth
 
