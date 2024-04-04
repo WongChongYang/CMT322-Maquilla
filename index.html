@@ -33,7 +33,7 @@
             </span>
         </section>
         <script type="module">
-        import { files, Storage, database, Firestore } from "/firebase.js"
+        import { files, Storage, database, Firestore } from "firebase.js"
         const { getFirestore, collection, doc, getDocs } = Firestore
         const { getStorage, ref, getDownloadURL } = Storage
         const homeRef = collection(database, 'Homepage');
